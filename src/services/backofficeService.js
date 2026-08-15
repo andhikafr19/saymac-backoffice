@@ -337,3 +337,24 @@ export async function fetchCategoryStats() {
 
   return Object.values(categoryMap);
 }
+
+/**
+ * Helper to display dynamic price range or single price
+ */
+export function getPriceDisplay(product) {
+  if (!product) return 'Rp 0';
+  const levelPrices = product.level_prices || product.harga_level;
+  if (Array.isArray(levelPrices) && levelPrices.length > 0) {
+    const prices = levelPrices.map(item => item.price || item.harga).filter(h => h > 0);
+    if (prices.length > 0) {
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      if (minPrice !== maxPrice) {
+        return `Mulai Rp ${minPrice.toLocaleString('id-ID')}`;
+      }
+      return `Rp ${minPrice.toLocaleString('id-ID')}`;
+    }
+  }
+  return `Rp ${(product.price || product.harga || 0).toLocaleString('id-ID')}`;
+}
+

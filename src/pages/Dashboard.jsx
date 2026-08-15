@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Package, Eye, Star, Tags, Plus, Flame, Sparkles, RefreshCw, ArrowUpRight } from 'lucide-react';
 import StatCard from '../components/StatCard';
-import { fetchBackofficeProducts, toggleProductActive } from '../services/backofficeService';
-import { getPriceDisplay } from '../../../saymac-web/src/services/productService';
+import { fetchBackofficeProducts, toggleProductActive, getPriceDisplay } from '../services/backofficeService';
 
 export default function Dashboard({ setCurrentPage, onOpenCreateModal, onOpenEditModal, showToast }) {
   const [products, setProducts] = useState([]);

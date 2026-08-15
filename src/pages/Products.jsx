@@ -16,9 +16,9 @@ import {
   fetchBackofficeProducts, 
   toggleProductActive, 
   toggleProductFeatured, 
-  deleteProduct 
+  deleteProduct,
+  getPriceDisplay 
 } from '../services/backofficeService';
-import { getPriceDisplay } from '../../../saymac-web/src/services/productService';
 
 export default function Products({ onOpenCreateModal, onOpenEditModal, showToast }) {
   const [products, setProducts] = useState([]);
