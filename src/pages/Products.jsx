@@ -200,7 +200,7 @@ export default function Products({ onOpenCreateModal, onOpenEditModal, showToast
                 const levels = p.spicy_levels || p.level_pedas || [0,1,2,3,4,5];
                 const isActive = p.is_active !== false && p.stok_tampil !== false;
                 const isFeatured = Boolean(p.is_featured || p.unggulan);
-                const img = (Array.isArray(p.images) && p.images[0]) || (Array.isArray(p.foto) && p.foto[0]) || '/images/placeholder.jpg';
+                const img = (Array.isArray(p.images) && p.images[0]) || (Array.isArray(p.foto) && p.foto[0]) || '/images/placeholder.svg';
 
                 return (
                   <tr key={p.id}>
@@ -210,7 +210,10 @@ export default function Products({ onOpenCreateModal, onOpenEditModal, showToast
                           src={img} 
                           alt={p.name || p.nama} 
                           className="product-img-thumb" 
-                          onError={(e) => { e.target.src = '/images/placeholder.jpg'; }}
+                          onError={(e) => { 
+                            e.target.onerror = null; 
+                            e.target.src = '/images/placeholder.svg'; 
+                          }}
                         />
                         <div>
                           <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{p.name || p.nama}</div>

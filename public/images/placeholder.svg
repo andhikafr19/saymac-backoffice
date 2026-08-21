@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="#1b263b"/>
+  <circle cx="150" cy="130" r="40" fill="#415a77" opacity="0.5"/>
+  <path d="M90 220 L130 170 L170 205 L210 155 L240 220 Z" fill="#415a77" opacity="0.7"/>
+  <text x="150" y="255" text-anchor="middle" fill="#778da9" font-family="system-ui, sans-serif" font-size="14" font-weight="600">No Image Preview</text>
+</svg>

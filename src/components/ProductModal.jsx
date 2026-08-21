@@ -427,7 +427,10 @@ export default function ProductModal({ isOpen, onClose, onSave, productToEdit })
                       src={imgUrl} 
                       alt={`Foto ${idx+1}`} 
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => { e.target.src = '/images/placeholder.jpg'; }}
+                      onError={(e) => { 
+                        e.target.onerror = null; 
+                        e.target.src = '/images/placeholder.svg'; 
+                      }}
                     />
                     <button
                       type="button"

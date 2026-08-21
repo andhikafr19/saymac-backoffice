@@ -146,7 +146,7 @@ export default function Dashboard({ setCurrentPage, onOpenCreateModal, onOpenEdi
                     const priceText = getPriceDisplay(p);
                     const levels = p.spicy_levels || p.level_pedas || [0,1,2,3,4,5];
                     const isActive = p.is_active !== false && p.stok_tampil !== false;
-                    const img = (Array.isArray(p.images) && p.images[0]) || (Array.isArray(p.foto) && p.foto[0]) || '/images/placeholder.jpg';
+                    const img = (Array.isArray(p.images) && p.images[0]) || (Array.isArray(p.foto) && p.foto[0]) || '/images/placeholder.svg';
 
                     return (
                       <tr key={p.id}>
@@ -156,7 +156,10 @@ export default function Dashboard({ setCurrentPage, onOpenCreateModal, onOpenEdi
                               src={img} 
                               alt={p.name || p.nama} 
                               className="product-img-thumb" 
-                              onError={(e) => { e.target.src = '/images/placeholder.jpg'; }}
+                              onError={(e) => { 
+                                e.target.onerror = null; 
+                                e.target.src = '/images/placeholder.svg'; 
+                              }}
                             />
                             <div>
                               <div style={{ fontWeight: 600 }}>{p.name || p.nama}</div>
