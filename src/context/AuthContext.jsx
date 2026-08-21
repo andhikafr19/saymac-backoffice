@@ -6,25 +6,17 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isDemoMode, setIsDemoMode] = useState(false);
 
   useEffect(() => {
-    const initAuth = async () => {
-      // Check if previously logged in via local storage demo mode
-      const savedDemoUser = localStorage.getItem('saymac_admin_demo');
-      if (savedDemoUser) {
-        setUser(JSON.parse(savedDemoUser));
-        setIsDemoMode(true);
-        setLoading(false);
-        return;
-      }
+    // Bersihkan sisa data demo local jika ada
+    localStorage.removeItem('saymac_admin_demo');
 
+    const initAuth = async () => {
       if (isSupabaseConfigured && supabase) {
         try {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
             setUser(session.user);
-            setIsDemoMode(false);
           }
         } catch (err) {
           console.warn('Supabase auth session check failed:', err);
@@ -37,13 +29,7 @@ export const AuthProvider = ({ children }) => {
 
     if (isSupabaseConfigured && supabase) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          setIsDemoMode(false);
-          localStorage.removeItem('saymac_admin_demo');
-        } else if (!localStorage.getItem('saymac_admin_demo')) {
-          setUser(null);
-        }
+        setUser(session?.user || null);
       });
       return () => subscription.unsubscribe();
     }
@@ -51,46 +37,31 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithSupabase = async (email, password) => {
     if (!isSupabaseConfigured || !supabase) {
-      throw new Error('Supabase belum terkonfigurasi. Silakan gunakan Mode Demo Admin.');
+      throw new Error('Kredensial Supabase belum terkonfigurasi pada file .env.');
     }
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     setUser(data.user);
-    setIsDemoMode(false);
-    localStorage.removeItem('saymac_admin_demo');
     return data.user;
   };
 
-  const loginAsDemoAdmin = () => {
-    const demoUser = {
-      id: 'demo-admin-id',
-      email: 'admin@saymacaroni.id',
-      role: 'authenticated',
-      user_metadata: { name: 'Admin Say Macaroni' }
-    };
-    setUser(demoUser);
-    setIsDemoMode(true);
-    localStorage.setItem('saymac_admin_demo', JSON.stringify(demoUser));
-    return demoUser;
-  };
-
   const logout = async () => {
-    if (isSupabaseConfigured && supabase && !isDemoMode) {
-      await supabase.auth.signOut();
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch (err) {
+        console.error('Logout error:', err);
+      }
     }
     setUser(null);
-    setIsDemoMode(false);
-    localStorage.removeItem('saymac_admin_demo');
   };
 
   return (
     <AuthContext.Provider value={{
       user,
       loading,
-      isDemoMode,
       isSupabaseConfigured,
       loginWithSupabase,
-      loginAsDemoAdmin,
       logout
     }}>
       {children}

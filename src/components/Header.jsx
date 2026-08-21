@@ -10,7 +10,7 @@ const PAGE_TITLES = {
 };
 
 export default function Header({ currentPage, theme, toggleTheme, setMobileOpen }) {
-  const { isSupabaseConfigured, isDemoMode } = useAuth();
+  const { isSupabaseConfigured } = useAuth();
 
   return (
     <header className="header">

@@ -90,12 +90,12 @@ export default function Settings({ showToast }) {
           )}
           <div>
             <div style={{ fontWeight: 700, fontSize: '0.95rem', color: isSupabaseConfigured ? 'var(--status-success)' : 'var(--status-warning)' }}>
-              {isSupabaseConfigured ? 'Supabase Credentials Terpasang' : 'Menjalankan Mode Demo Admin (Local Fallback Data)'}
+              {isSupabaseConfigured ? 'Supabase Credentials Terpasang' : 'Kredensial Supabase Belum Terpasang'}
             </div>
             <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
               {isSupabaseConfigured 
                 ? `URL: ${import.meta.env.VITE_SUPABASE_URL}` 
-                : 'Variabel lingkungan VITE_SUPABASE_URL belum diisi. Anda saat ini menguji fitur Backoffice dengan data demo lokal.'}
+                : 'Variabel lingkungan VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY belum diisi pada file .env.'}
             </div>
           </div>
         </div>

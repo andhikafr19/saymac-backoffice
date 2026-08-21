@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Lock, Mail, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  const { loginWithSupabase, loginAsDemoAdmin, isSupabaseConfigured } = useAuth();
+  const { loginWithSupabase } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -103,47 +103,12 @@ export default function Login() {
             style={{ width: '100%', padding: '0.875rem' }}
             disabled={loading}
           >
-            {loading ? 'Proses...' : 'Masuk Kebackoffice'} <ArrowRight size={18} />
+            {loading ? 'Memproses...' : 'Masuk ke Backoffice'} <ArrowRight size={18} />
           </button>
         </form>
 
-        <div style={{
-          position: 'relative',
-          margin: '1.75rem 0',
-          textAlign: 'center',
-        }}>
-          <div style={{ borderTop: '1px solid var(--border-color)', position: 'absolute', top: '50%', left: 0, right: 0 }}></div>
-          <span style={{ 
-            background: 'var(--bg-secondary)', 
-            padding: '0 0.75rem', 
-            position: 'relative', 
-            fontSize: '0.775rem', 
-            color: 'var(--text-muted)',
-            fontWeight: 600,
-            textTransform: 'uppercase'
-          }}>
-            Atau
-          </span>
-        </div>
-
-        {/* Admin Quick Login Button */}
-        <button
-          type="button"
-          onClick={loginAsDemoAdmin}
-          className="btn btn-secondary"
-          style={{ 
-            width: '100%', 
-            padding: '0.75rem', 
-            color: 'var(--accent-gold)',
-            borderColor: 'rgba(255, 183, 3, 0.3)',
-            background: 'rgba(255, 183, 3, 0.06)'
-          }}
-        >
-          <Sparkles size={18} /> Masuk Cepat Sebagai Admin
-        </button>
-
         <div style={{ 
-          marginTop: '1.5rem', 
+          marginTop: '1.75rem', 
           textAlign: 'center', 
           fontSize: '0.775rem', 
           color: 'var(--text-muted)',
@@ -152,7 +117,7 @@ export default function Login() {
           justifyContent: 'center',
           gap: '0.375rem'
         }}>
-          <ShieldCheck size={14} /> Terhubung dengan database Say Macaroni
+          <ShieldCheck size={14} /> Autentikasi aman melalui Supabase Auth
         </div>
       </div>
     </div>
