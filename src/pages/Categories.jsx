@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Tags, Package, Eye, Star, Plus } from 'lucide-react';
+import { Tags, Eye, Star, Plus } from 'lucide-react';
 import { fetchCategoryStats } from '../services/backofficeService';
 
 export default function Categories({ onOpenCreateModal }) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload, Plus, Trash2, Flame, Image as ImageIcon, Check } from 'lucide-react';
+import { X, Upload, Plus, Flame, Check } from 'lucide-react';
 import { isSupabaseConfigured, uploadProductImage } from '../lib/supabase';
 
 const ALL_SPICY_LEVELS = [0, 1, 2, 3, 4, 5];

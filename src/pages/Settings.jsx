@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Database, CheckCircle2, AlertTriangle, Key, HardDrive, Code, ExternalLink, RefreshCw } from 'lucide-react';
+import { Database, CheckCircle2, AlertTriangle, Key, RefreshCw } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 export default function Settings({ showToast }) {
@@ -25,7 +25,7 @@ export default function Settings({ showToast }) {
       if (error) throw error;
 
       // Test storage bucket
-      const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('product-images');
+      await supabase.storage.getBucket('product-images');
 
       setDbStatus({
         success: true,

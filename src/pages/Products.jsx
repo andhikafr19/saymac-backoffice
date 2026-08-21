@@ -5,10 +5,7 @@ import {
   Filter, 
   Edit3, 
   Trash2, 
-  Flame, 
   Star, 
-  Eye, 
-  EyeOff, 
   RefreshCw,
   SlidersHorizontal
 } from 'lucide-react';

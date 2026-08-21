@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sun, Moon, Menu, Database, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Sun, Moon, Menu, Database } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const PAGE_TITLES = {
