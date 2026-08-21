@@ -3,6 +3,7 @@ import {
   LayoutDashboard, 
   Package, 
   Tags, 
+  Megaphone,
   Settings, 
   LogOut, 
   Sparkles,
@@ -14,6 +15,7 @@ const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'products', label: 'Kelola Produk', icon: Package },
   { id: 'categories', label: 'Kategori Produk', icon: Tags },
+  { id: 'campaigns', label: 'Promo & Banner', icon: Megaphone },
   { id: 'settings', label: 'Pengaturan System', icon: Settings },
 ];
 

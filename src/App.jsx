@@ -9,9 +9,12 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Categories from './pages/Categories';
+import Campaigns from './pages/Campaigns';
 import Settings from './pages/Settings';
+import CampaignModal from './components/CampaignModal';
 
 import { createProduct, updateProduct } from './services/backofficeService';
+import { createCampaign, updateCampaign } from './services/campaignService';
 
 const MainLayout = () => {
   const { user, loading } = useAuth();
@@ -76,6 +79,42 @@ const MainLayout = () => {
     }
   };
 
+  // Campaign Modal state
+  const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
+  const [campaignToEdit, setCampaignToEdit] = useState(null);
+
+  const handleOpenCreateCampaignModal = () => {
+    setCampaignToEdit(null);
+    setIsCampaignModalOpen(true);
+  };
+
+  const handleOpenEditCampaignModal = (campaign) => {
+    setCampaignToEdit(campaign);
+    setIsCampaignModalOpen(true);
+  };
+
+  const handleCloseCampaignModal = () => {
+    setIsCampaignModalOpen(false);
+    setCampaignToEdit(null);
+  };
+
+  const handleSaveCampaign = async (formData) => {
+    try {
+      if (formData.id) {
+        await updateCampaign(formData.id, formData);
+        showToast('Banner promo berhasil diperbarui!', 'success');
+      } else {
+        await createCampaign(formData);
+        showToast('Banner promo baru berhasil dibuat!', 'success');
+      }
+      setIsCampaignModalOpen(false);
+      setCampaignToEdit(null);
+      window.dispatchEvent(new Event('saymac_campaigns_updated'));
+    } catch (err) {
+      showToast(`Gagal menyimpan banner: ${err.message}`, 'danger');
+    }
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -122,6 +161,14 @@ const MainLayout = () => {
         return (
           <Categories 
             onOpenCreateModal={handleOpenCreateModal}
+          />
+        );
+      case 'campaigns':
+        return (
+          <Campaigns
+            onOpenCreateModal={handleOpenCreateCampaignModal}
+            onOpenEditModal={handleOpenEditCampaignModal}
+            showToast={showToast}
           />
         );
       case 'settings':
@@ -172,6 +219,14 @@ const MainLayout = () => {
         onClose={handleCloseModal}
         onSave={handleSaveProduct}
         productToEdit={productToEdit}
+      />
+
+      {/* Campaign Create/Edit Modal */}
+      <CampaignModal
+        isOpen={isCampaignModalOpen}
+        onClose={handleCloseCampaignModal}
+        onSave={handleSaveCampaign}
+        campaignToEdit={campaignToEdit}
       />
 
       {/* Floating Toast Notification */}
