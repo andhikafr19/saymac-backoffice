@@ -33,14 +33,14 @@ export default function Header({ currentPage, theme, toggleTheme, setMobileOpen 
       <div className="header-actions">
         {/* DB Status Badge */}
         <div 
-          className={`badge ${isSupabaseConfigured && !isDemoMode ? 'badge-success' : 'badge-warning'}`}
+          className={`badge ${isSupabaseConfigured ? 'badge-success' : 'badge-warning'}`}
           style={{ padding: '0.5rem 0.875rem', fontSize: '0.8rem' }}
         >
           <Database size={14} />
-          {isSupabaseConfigured && !isDemoMode ? (
+          {isSupabaseConfigured ? (
             <span>Supabase Connected</span>
           ) : (
-            <span>Demo Mode (Local Data)</span>
+            <span>Supabase Disconnected</span>
           )}
         </div>
 

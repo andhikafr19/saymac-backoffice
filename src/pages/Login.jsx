@@ -126,7 +126,7 @@ export default function Login() {
           </span>
         </div>
 
-        {/* Demo Login Quick Button */}
+        {/* Admin Quick Login Button */}
         <button
           type="button"
           onClick={loginAsDemoAdmin}
@@ -139,7 +139,7 @@ export default function Login() {
             background: 'rgba(255, 183, 3, 0.06)'
           }}
         >
-          <Sparkles size={18} /> Masuk Mode Demo Admin (Uji Coba)
+          <Sparkles size={18} /> Masuk Cepat Sebagai Admin
         </button>
 
         <div style={{ 

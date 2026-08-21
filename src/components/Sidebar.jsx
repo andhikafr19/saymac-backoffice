@@ -18,7 +18,7 @@ const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ currentPage, setCurrentPage, mobileOpen, setMobileOpen }) {
-  const { user, isDemoMode, logout } = useAuth();
+  const { user, isSupabaseConfigured, logout } = useAuth();
 
   const handleNavClick = (pageId) => {
     setCurrentPage(pageId);
@@ -38,15 +38,15 @@ export default function Sidebar({ currentPage, setCurrentPage, mobileOpen, setMo
         </div>
       </div>
 
-      {/* Mode Banner if Demo */}
-      {isDemoMode && (
+      {/* Status Warning if Supabase Not Configured */}
+      {!isSupabaseConfigured && (
         <div style={{
           margin: '0.875rem 0.875rem 0',
           padding: '0.625rem 0.75rem',
           borderRadius: 'var(--radius-md)',
-          background: 'rgba(255, 183, 3, 0.12)',
-          border: '1px solid rgba(255, 183, 3, 0.25)',
-          color: 'var(--accent-gold)',
+          background: 'rgba(239, 68, 68, 0.12)',
+          border: '1px solid rgba(239, 68, 68, 0.25)',
+          color: 'var(--status-danger)',
           fontSize: '0.75rem',
           display: 'flex',
           alignItems: 'center',
@@ -54,7 +54,7 @@ export default function Sidebar({ currentPage, setCurrentPage, mobileOpen, setMo
           fontWeight: 600
         }}>
           <Sparkles size={16} />
-          <span>Demo Mode (Local Data)</span>
+          <span>Supabase Belum Dikonfigurasi</span>
         </div>
       )}
 
@@ -90,7 +90,7 @@ export default function Sidebar({ currentPage, setCurrentPage, mobileOpen, setMo
               {user?.user_metadata?.name || user?.email || 'Admin'}
             </div>
             <div style={{ fontSize: '0.725rem', color: '#94a3b8' }}>
-              {isDemoMode ? 'Administrator' : 'Supabase Auth'}
+              {isSupabaseConfigured ? 'Supabase Database' : 'Offline'}
             </div>
           </div>
           <button 
