@@ -1,10 +1,52 @@
-import React, { useState } from 'react';
-import { Database, CheckCircle2, AlertTriangle, Key, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Database, CheckCircle2, AlertTriangle, Key, RefreshCw, Phone, Instagram, Mail, Clock, MapPin, Save, Check } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { fetchStoreSettings, updateStoreSettings, DEFAULT_STORE_SETTINGS } from '../services/storeService';
 
 export default function Settings({ showToast }) {
   const [testing, setTesting] = useState(false);
   const [dbStatus, setDbStatus] = useState(null);
+
+  // Store contact settings state
+  const [storeData, setStoreData] = useState(DEFAULT_STORE_SETTINGS);
+  const [savingStore, setSavingStore] = useState(false);
+  const [loadingStore, setLoadingStore] = useState(true);
+
+  useEffect(() => {
+    async function loadSettings() {
+      setLoadingStore(true);
+      try {
+        const data = await fetchStoreSettings();
+        setStoreData(data);
+      } catch (err) {
+        console.error('Error loading store settings:', err);
+      } finally {
+        setLoadingStore(false);
+      }
+    }
+    loadSettings();
+  }, []);
+
+  const handleStoreChange = (e) => {
+    const { name, value } = e.target;
+    setStoreData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSaveStore = async (e) => {
+    e.preventDefault();
+    setSavingStore(true);
+    try {
+      await updateStoreSettings(storeData);
+      showToast('Informasi Kontak & Toko berhasil diperbarui!', 'success');
+    } catch (err) {
+      showToast(`Gagal menyimpan kontak: ${err.message}`, 'danger');
+    } finally {
+      setSavingStore(false);
+    }
+  };
 
   const testConnection = async () => {
     setTesting(true);
@@ -45,16 +87,185 @@ export default function Settings({ showToast }) {
   };
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '900px' }}>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '1.4rem' }}>Pengaturan System & Diagnostic DB</h2>
+    <div className="animate-fade-in" style={{ maxWidth: '900px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div>
+        <h2 style={{ fontSize: '1.4rem' }}>Pengaturan System & Kontak Toko</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-          Verifikasi konektivitas Supabase PostgreSQL Database & Storage Bucket
+          Kelola nomor WhatsApp pemesanan, jam operasional, media sosial, dan koneksi Supabase
         </p>
       </div>
 
-      {/* Card 1: Connection Status Diagnostic */}
-      <div className="card" style={{ marginBottom: '1.5rem' }}>
+      {/* Card 1: Store & Contact Information Management (Priority 2 CMS) */}
+      <div className="card">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: 42, height: 42, borderRadius: 'var(--radius-md)', background: 'rgba(255, 183, 3, 0.12)', color: 'var(--accent-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Phone size={22} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.1rem' }}>Informasi Kontak & Nomor WhatsApp Pemesanan</h3>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                Tersinkronisasi langsung ke Keranjang Checkout, Halaman Kontak, dan Footer landing web
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSaveStore} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* WhatsApp Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                Nomor WhatsApp Admin (Format 62...) *
+              </label>
+              <input
+                type="text"
+                name="whatsapp_number"
+                value={storeData.whatsapp_number}
+                onChange={handleStoreChange}
+                placeholder="Contoh: 6285797987872"
+                className="form-input"
+                style={{ width: '100%' }}
+                required
+              />
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                Link WA: <a href={`https://wa.me/${storeData.whatsapp_number}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-cyan)' }}>https://wa.me/{storeData.whatsapp_number}</a>
+              </div>
+            </div>
+
+            <div>
+              <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                Tampilan Format Nomor di UI
+              </label>
+              <input
+                type="text"
+                name="whatsapp_display"
+                value={storeData.whatsapp_display}
+                onChange={handleStoreChange}
+                placeholder="Contoh: +62 857-9798-7872"
+                className="form-input"
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+
+          {/* Instagram & Email Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                Instagram Handle & URL
+              </label>
+              <input
+                type="text"
+                name="instagram_handle"
+                value={storeData.instagram_handle}
+                onChange={handleStoreChange}
+                placeholder="Contoh: @saymacaroni"
+                className="form-input"
+                style={{ width: '100%', marginBottom: '0.5rem' }}
+              />
+              <input
+                type="text"
+                name="instagram_url"
+                value={storeData.instagram_url}
+                onChange={handleStoreChange}
+                placeholder="Contoh: https://instagram.com/saymacaroni"
+                className="form-input"
+                style={{ width: '100%', fontSize: '0.825rem' }}
+              />
+            </div>
+
+            <div>
+              <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                Email Resmi Toko
+              </label>
+              <input
+                type="email"
+                name="email_address"
+                value={storeData.email_address}
+                onChange={handleStoreChange}
+                placeholder="Contoh: hello@saymacaroni.com"
+                className="form-input"
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+
+          {/* Jam Operasional Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                Jam Operasional Weekdays
+              </label>
+              <input
+                type="text"
+                name="operational_weekdays"
+                value={storeData.operational_weekdays}
+                onChange={handleStoreChange}
+                placeholder="Contoh: Senin - Sabtu: 09:00 - 21:00 WIB"
+                className="form-input"
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div>
+              <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                Jam Operasional Weekend / Hari Libur
+              </label>
+              <input
+                type="text"
+                name="operational_weekends"
+                value={storeData.operational_weekends}
+                onChange={handleStoreChange}
+                placeholder="Contoh: Minggu / Hari Libur: 10:00 - 17:00 WIB"
+                className="form-input"
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+
+          {/* Alamat Fisik & Google Maps */}
+          <div>
+            <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+              Alamat Fisik Toko / Outlet
+            </label>
+            <textarea
+              name="store_address"
+              value={storeData.store_address}
+              onChange={handleStoreChange}
+              placeholder="Masukkan alamat lengkap toko..."
+              className="form-input"
+              rows={2}
+              style={{ width: '100%', resize: 'vertical', marginBottom: '0.5rem' }}
+            />
+            <input
+              type="text"
+              name="maps_url"
+              value={storeData.maps_url}
+              onChange={handleStoreChange}
+              placeholder="Link Google Maps (https://maps.google.com/...)"
+              className="form-input"
+              style={{ width: '100%', fontSize: '0.825rem' }}
+            />
+          </div>
+
+          {/* Save Button */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={savingStore || loadingStore}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.5rem' }}
+            >
+              <Save size={16} />
+              <span>{savingStore ? 'Menyimpan...' : 'Simpan Pengaturan Kontak'}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Card 2: Connection Status Diagnostic */}
+      <div className="card">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ width: 42, height: 42, borderRadius: 'var(--radius-md)', background: 'rgba(76, 201, 240, 0.12)', color: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -121,7 +332,7 @@ export default function Settings({ showToast }) {
         )}
       </div>
 
-      {/* Card 2: Environment setup guide */}
+      {/* Card 3: Environment setup guide */}
       <div className="card">
         <h3 style={{ fontSize: '1.05rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Key size={18} style={{ color: 'var(--accent-gold)' }} />
@@ -135,7 +346,7 @@ export default function Settings({ showToast }) {
             Isi variabel <code style={{ color: 'var(--accent-gold)' }}>VITE_SUPABASE_URL</code> dan <code style={{ color: 'var(--accent-gold)' }}>VITE_SUPABASE_ANON_KEY</code> dengan API Key dari Supabase Dashboard.
           </li>
           <li>
-            Jalankan script <code style={{ color: 'var(--accent-gold)' }}>supabase_setup.sql</code> yang berada di folder <code style={{ color: 'var(--accent-gold)' }}>saymac-web/supabase_setup.sql</code> pada SQL Editor Supabase untuk membuat tabel <code style={{ color: 'var(--accent-gold)' }}>products</code> dan Storage Bucket <code style={{ color: 'var(--accent-gold)' }}>product-images</code>.
+            Jalankan script <code style={{ color: 'var(--accent-gold)' }}>supabase_setup.sql</code> yang berada di folder <code style={{ color: 'var(--accent-gold)' }}>saymac-web/supabase_setup.sql</code> pada SQL Editor Supabase untuk membuat tabel <code style={{ color: 'var(--accent-gold)' }}>products</code>, <code style={{ color: 'var(--accent-gold)' }}>campaigns</code>, <code style={{ color: 'var(--accent-gold)' }}>store_settings</code>, dan Storage Bucket <code style={{ color: 'var(--accent-gold)' }}>product-images</code>.
           </li>
         </ol>
       </div>
