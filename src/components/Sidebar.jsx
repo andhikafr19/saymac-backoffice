@@ -4,6 +4,7 @@ import {
   Package, 
   Tags, 
   Megaphone,
+  PhoneCall,
   Settings, 
   LogOut, 
   Sparkles,
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { id: 'products', label: 'Kelola Produk', icon: Package },
   { id: 'categories', label: 'Kategori Produk', icon: Tags },
   { id: 'campaigns', label: 'Promo & Banner', icon: Megaphone },
+  { id: 'contact', label: 'Kontak & Info Toko', icon: PhoneCall },
   { id: 'settings', label: 'Pengaturan System', icon: Settings },
 ];
 

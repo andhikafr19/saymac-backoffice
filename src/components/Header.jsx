@@ -2,15 +2,39 @@ import React from 'react';
 import { Sun, Moon, Menu, Database } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const PAGE_TITLES = {
-  dashboard: 'Dashboard Overview',
-  products: 'Manajemen Katalog Produk',
-  categories: 'Kategori & Klasifikasi',
-  settings: 'Pengaturan System & Koneksi DB',
+const PAGE_HEADERS = {
+  dashboard: {
+    title: 'Dashboard Overview',
+    subtitle: 'Ringkasan statistik produk, varian, dan aktivitas Say Macaroni'
+  },
+  products: {
+    title: 'Manajemen Katalog Produk',
+    subtitle: 'Kelola data produk, harga level pedas, varian rasa, dan media foto'
+  },
+  categories: {
+    title: 'Kategori & Klasifikasi',
+    subtitle: 'Pengelompokan menu cemilan, best seller, dan varian keju/pedas'
+  },
+  campaigns: {
+    title: 'Promo & Banner Campaign',
+    subtitle: 'Kelola banner promosi musiman dan highlight penawaran spesial'
+  },
+  contact: {
+    title: 'CMS Kontak & Info Toko',
+    subtitle: 'Kelola nomor WhatsApp pemesanan, jam buka, dan lokasi outlet'
+  },
+  settings: {
+    title: 'Pengaturan System & Koneksi DB',
+    subtitle: 'Status koneksi Supabase PostgreSQL, Storage Bucket, dan konfigurasi API'
+  },
 };
 
 export default function Header({ currentPage, theme, toggleTheme, setMobileOpen }) {
   const { isSupabaseConfigured } = useAuth();
+  const currentHeader = PAGE_HEADERS[currentPage] || {
+    title: 'Backoffice CMS',
+    subtitle: 'Kelola data Say Macaroni'
+  };
 
   return (
     <header className="header">
@@ -23,9 +47,9 @@ export default function Header({ currentPage, theme, toggleTheme, setMobileOpen 
           <Menu size={20} />
         </button>
         <div>
-          <h2 style={{ fontSize: '1.25rem' }}>{PAGE_TITLES[currentPage] || 'Backoffice CMS'}</h2>
+          <h2 style={{ fontSize: '1.25rem' }}>{currentHeader.title}</h2>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            Kelola data produk, harga level pedas, & media Say Macaroni
+            {currentHeader.subtitle}
           </div>
         </div>
       </div>

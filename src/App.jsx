@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Categories from './pages/Categories';
 import Campaigns from './pages/Campaigns';
+import Contacts from './pages/Contacts';
 import Settings from './pages/Settings';
 import CampaignModal from './components/CampaignModal';
 
@@ -171,10 +172,17 @@ const MainLayout = () => {
             showToast={showToast}
           />
         );
+      case 'contact':
+        return (
+          <Contacts 
+            showToast={showToast}
+          />
+        );
       case 'settings':
         return (
           <Settings 
             showToast={showToast}
+            setCurrentPage={setCurrentPage}
           />
         );
       default:
