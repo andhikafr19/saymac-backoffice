@@ -7,6 +7,7 @@ import Toast from './components/Toast';
 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Orders from './pages/Orders';
 import Products from './pages/Products';
 import Categories from './pages/Categories';
 import Campaigns from './pages/Campaigns';
@@ -147,6 +148,12 @@ const MainLayout = () => {
             setCurrentPage={setCurrentPage}
             onOpenCreateModal={handleOpenCreateModal}
             onOpenEditModal={handleOpenEditModal}
+            showToast={showToast}
+          />
+        );
+      case 'orders':
+        return (
+          <Orders 
             showToast={showToast}
           />
         );
