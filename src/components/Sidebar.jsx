@@ -1,6 +1,7 @@
 import React from 'react';
 import { 
   LayoutDashboard, 
+  ShoppingBag,
   Package, 
   Tags, 
   Megaphone,
@@ -14,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'orders', label: 'Pesanan Masuk', icon: ShoppingBag },
   { id: 'products', label: 'Kelola Produk', icon: Package },
   { id: 'categories', label: 'Kategori Produk', icon: Tags },
   { id: 'campaigns', label: 'Promo & Banner', icon: Megaphone },

@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Eye, Star, Tags, Plus, Sparkles, RefreshCw, ArrowUpRight } from 'lucide-react';
+import { Package, Eye, Star, Tags, Plus, Sparkles, RefreshCw, ArrowUpRight, ShoppingBag, DollarSign } from 'lucide-react';
 import StatCard from '../components/StatCard';
 import { fetchBackofficeProducts, toggleProductActive, getPriceDisplay } from '../services/backofficeService';
+import { fetchBackofficeOrders } from '../services/orderService';
 
 export default function Dashboard({ setCurrentPage, onOpenCreateModal, onOpenEditModal, showToast }) {
   const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const data = await fetchBackofficeProducts();
-      setProducts(data);
+      const [productsData, ordersData] = await Promise.all([
+        fetchBackofficeProducts(),
+        fetchBackofficeOrders().catch(() => [])
+      ]);
+      setProducts(productsData || []);
+      setOrders(ordersData || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -27,6 +33,10 @@ export default function Dashboard({ setCurrentPage, onOpenCreateModal, onOpenEdi
   const activeProducts = products.filter(p => p.is_active !== false && p.stok_tampil !== false).length;
   const featuredProducts = products.filter(p => p.is_featured || p.unggulan).length;
   const totalCategories = new Set(products.map(p => p.category || p.kategori || 'General')).size;
+  
+  const totalOrders = orders.length;
+  const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'processing').length;
+  const totalRevenue = orders.filter(o => o.status !== 'cancelled').reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
 
   const handleToggleActive = async (id, currentStatus) => {
     try {
@@ -213,6 +223,32 @@ export default function Dashboard({ setCurrentPage, onOpenCreateModal, onOpenEdi
         {/* Right Info Sidebar Card */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
+          {/* Quick Orders Summary Card */}
+          <div className="card" style={{ background: 'linear-gradient(135deg, rgba(33, 158, 188, 0.12), rgba(76, 201, 240, 0.08))', border: '1px solid rgba(76, 201, 240, 0.25)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-cyan)' }}>
+                <ShoppingBag size={18} />
+                <h4 style={{ fontSize: '0.975rem', fontWeight: 700 }}>Pesanan Masuk</h4>
+              </div>
+              <span className="badge badge-info">{pendingOrders} Pending</span>
+            </div>
+            <div style={{ marginBottom: '0.875rem' }}>
+              <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
+                Rp {totalRevenue.toLocaleString('id-ID')}
+              </div>
+              <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)' }}>
+                Total omzet dari {totalOrders} transaksi
+              </div>
+            </div>
+            <button 
+              onClick={() => setCurrentPage('orders')} 
+              className="btn btn-primary"
+              style={{ width: '100%', fontSize: '0.825rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem' }}
+            >
+              Buka Manajemen Pesanan <ArrowUpRight size={14} />
+            </button>
+          </div>
+
           {/* Quick Guide */}
           <div className="card">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.75rem', color: 'var(--accent-gold)' }}>
