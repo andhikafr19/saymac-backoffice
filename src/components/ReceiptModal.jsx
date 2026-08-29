@@ -1,6 +1,12 @@
 import React from 'react';
 import { Printer, X, FileText } from 'lucide-react';
 
+// Helper to remove redundant "Say Macaroni - " or "Say Macaroni " from product names
+function cleanProductName(rawName) {
+  if (!rawName) return 'Makaroni Gurih';
+  return rawName.replace(/^Say\s*Macaroni\s*[-–—]?\s*/i, '').trim();
+}
+
 export default function ReceiptModal({ order, onClose }) {
   if (!order) return null;
 
@@ -8,13 +14,9 @@ export default function ReceiptModal({ order, onClose }) {
     window.print();
   };
 
-  const formattedDate = new Date(order.created_at || Date.now()).toLocaleString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const orderDate = new Date(order.created_at || Date.now());
+  const dateStr = orderDate.toISOString().split('T')[0];
+  const timeStr = orderDate.toTimeString().split(' ')[0];
 
   const items = order.items || [];
   const totalAmount = Number(order.total_amount || 0);
@@ -25,8 +27,8 @@ export default function ReceiptModal({ order, onClose }) {
         {/* Actions Header Bar (Hidden on Print) */}
         <div className="receipt-actions-bar no-print">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FileText size={20} color="var(--accent-gold, #ffb703)" />
-            <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-main)' }}>
+            <FileText size={18} color="var(--accent-gold, #ffb703)" />
+            <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)' }}>
               Struk & Bukti Pesanan Kasir
             </span>
           </div>
@@ -48,130 +50,106 @@ export default function ReceiptModal({ order, onClose }) {
           </div>
         </div>
 
-        {/* Printable Receipt Paper */}
+        {/* Printable Thermal Paper Container */}
         <div className="receipt-paper" id="printable-receipt">
-          {/* Header Brand */}
+          {/* Top Circular Logo */}
+          <div className="receipt-logo-wrap">
+            <img 
+              src="/images/say_macaroni_logo-removebg.png" 
+              alt="Say Macaroni Logo" 
+              className="receipt-logo"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          </div>
+
+          {/* Store Info */}
           <div className="receipt-header">
-            <div className="receipt-brand-logo">SAY MACARONI</div>
-            <div className="receipt-brand-tagline">Kriuk Lezat Bikin Nagih! • Bukti Pesanan Toko</div>
-            <div className="receipt-store-info">
-              Kompleks Ruko Primarasa, Blok B-10, Jl. Macaroni Raya No. 45, Jakarta Selatan<br />
-              WhatsApp: +62 857-9798-7872 • Instagram: @saymacaroni
+            <h2 className="receipt-store-name">Say Macaroni</h2>
+            <div className="receipt-store-sub">Jl. Macaroni Raya No. 45</div>
+            <div className="receipt-store-sub">Tlp 085797987872</div>
+          </div>
+
+          <div className="receipt-dashed-line" />
+
+          {/* Transaction Metadata (2 Columns) */}
+          <div className="receipt-meta-row">
+            <div className="receipt-meta-col-left">
+              <div>{dateStr}</div>
+              <div>{timeStr}</div>
+              <div>{order.order_code || '-'}</div>
+            </div>
+            <div className="receipt-meta-col-right">
+              <div className="receipt-customer-name">{order.customer_name || 'Pelanggan'}</div>
+              <div>{order.customer_phone || ''}</div>
+              {order.customer_address && (
+                <div className="receipt-address-trunc" title={order.customer_address}>
+                  {order.customer_address.length > 25 ? order.customer_address.slice(0, 25) + '...' : order.customer_address}
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="receipt-divider" />
+          <div className="receipt-dashed-line" />
 
-          {/* Metadata Grid */}
-          <div className="receipt-meta-grid">
-            <div>
-              <div className="receipt-label">KODE PESANAN</div>
-              <div className="receipt-value receipt-order-code">{order.order_code || '-'}</div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div className="receipt-label">WAKTU PESANAN</div>
-              <div className="receipt-value">{formattedDate} WIB</div>
-            </div>
+          {/* Item List (Simplified: Direct Flavor + Level) */}
+          <div className="receipt-items-list">
+            {items.map((item, index) => {
+              const cleanedName = cleanProductName(item.product_name || item.nama);
+              const spicyLvl = item.spicy_level ?? item.level_pedas;
+              const levelLabel = Number(spicyLvl) === 0 || spicyLvl === undefined
+                ? '(Tanpa Pedas)'
+                : `(Level ${spicyLvl})`;
+
+              const itemPrice = Number(item.price || item.harga || 0);
+              const itemQty = Number(item.quantity || 1);
+              const subtotal = Number(item.subtotal || itemPrice * itemQty);
+
+              return (
+                <div key={index} className="receipt-item-entry">
+                  <div className="receipt-item-title">
+                    {cleanedName} {levelLabel}
+                  </div>
+                  <div className="receipt-item-math">
+                    <span>{itemQty} x {itemPrice.toLocaleString('id-ID')}</span>
+                    <span>Rp {subtotal.toLocaleString('id-ID')}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="receipt-status-pill">
-            <span>Status Pesanan: <strong>{String(order.status || 'PENDING').toUpperCase()}</strong></span>
-            <span>Status Bayar: <strong>{String(order.payment_status || 'UNPAID').toUpperCase()}</strong></span>
-          </div>
+          <div className="receipt-dashed-line" />
 
-          <div className="receipt-divider-dashed" />
-
-          {/* Customer & Delivery Box */}
-          <div className="receipt-customer-box">
-            <div className="receipt-section-title">DATA PENERIMA & PENGIRIMAN</div>
-            <div className="receipt-info-row">
-              <span className="receipt-label">Nama Pelanggan:</span>
-              <span className="receipt-val-bold">{order.customer_name || '-'}</span>
-            </div>
-            <div className="receipt-info-row">
-              <span className="receipt-label">No. WhatsApp:</span>
-              <span>{order.customer_phone || '-'}</span>
-            </div>
-            <div className="receipt-info-row">
-              <span className="receipt-label">Alamat Kirim:</span>
-              <span>{order.customer_address || 'Ambil di Toko / Sesuai Kesepakatan WA'}</span>
-            </div>
-            {order.customer_notes && (
-              <div className="receipt-info-row" style={{ marginTop: '4px' }}>
-                <span className="receipt-label">Catatan:</span>
-                <span style={{ fontStyle: 'italic' }}>"{order.customer_notes}"</span>
-              </div>
-            )}
-          </div>
-
-          <div className="receipt-divider-dashed" />
-
-          {/* Items Table */}
-          <table className="receipt-table">
-            <thead>
-              <tr>
-                <th style={{ textAlign: 'left' }}>Item & Level Pedas</th>
-                <th style={{ textAlign: 'center', width: '50px' }}>Qty</th>
-                <th style={{ textAlign: 'right', width: '90px' }}>Harga</th>
-                <th style={{ textAlign: 'right', width: '100px' }}>Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, index) => {
-                const levelLabel = item.spicy_level === 0 || item.level_pedas === 0
-                  ? 'Tanpa Pedas'
-                  : `Lvl ${item.spicy_level ?? item.level_pedas}`;
-                const itemPrice = Number(item.price || item.harga || 0);
-                const itemQty = Number(item.quantity || 1);
-                const subtotal = Number(item.subtotal || itemPrice * itemQty);
-
-                return (
-                  <tr key={index}>
-                    <td>
-                      <div style={{ fontWeight: 600 }}>{item.product_name || item.nama}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#555' }}>
-                        Pilihan: {levelLabel} ({item.weight || item.berat || '150g'})
-                      </div>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>x{itemQty}</td>
-                    <td style={{ textAlign: 'right' }}>Rp {itemPrice.toLocaleString('id-ID')}</td>
-                    <td style={{ textAlign: 'right', fontWeight: 600 }}>Rp {subtotal.toLocaleString('id-ID')}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-
-          <div className="receipt-divider-dashed" />
-
-          {/* Totals */}
-          <div className="receipt-totals">
+          {/* Totals Section */}
+          <div className="receipt-total-block">
             <div className="receipt-total-row">
-              <span>Total Item ({items.reduce((s, it) => s + (it.quantity || 1), 0)} Pcs):</span>
-              <span>Rp {totalAmount.toLocaleString('id-ID')}</span>
-            </div>
-            <div className="receipt-total-row">
-              <span>Ongkos Kirim:</span>
-              <span style={{ fontStyle: 'italic', fontSize: '0.85rem' }}>Dikonfirmasi via WA</span>
-            </div>
-            <div className="receipt-divider-dashed" style={{ margin: '8px 0' }} />
-            <div className="receipt-grand-total">
-              <span>TOTAL ESTIMASI</span>
+              <span>Total</span>
               <span>Rp {totalAmount.toLocaleString('id-ID')}</span>
             </div>
           </div>
 
-          <div className="receipt-divider" />
+          {/* Notes if present */}
+          {order.customer_notes && (
+            <div className="receipt-notes-block">
+              <span className="receipt-notes-label">Catatan:</span> {order.customer_notes}
+            </div>
+          )}
 
-          {/* Footer Note */}
+          {/* Payment Account Information */}
+          <div className="receipt-payment-info">
+            <div style={{ marginBottom: '4px', fontWeight: 600 }}>Pembayaran melalui Rek :</div>
+            <div>BCA : 1234567890</div>
+            <div>MANDIRI : 1310012948578</div>
+            <div>BRI : 074901011451537</div>
+            <div style={{ marginTop: '4px', fontWeight: 700 }}>A.N SAY MACARONI</div>
+          </div>
+
+          {/* Receipt Footer */}
           <div className="receipt-footer">
-            <p style={{ fontWeight: 600, marginBottom: '4px' }}>Say Macaroni — Backoffice Order Receipt</p>
-            <p style={{ fontSize: '0.75rem', color: '#666' }}>
-              Bukti sah pesanan internal toko untuk arsip dapur, kasir & pengiriman.
-            </p>
-            <div className="receipt-barcode-visual">
-              * {order.order_code} *
-            </div>
+            <div className="receipt-thanks">Kriuk Lezat Bikin Nagih! 🍿</div>
+            <div style={{ fontSize: '0.75rem', color: '#666' }}>Terima Kasih Telah Berbelanja</div>
           </div>
         </div>
       </div>
@@ -195,7 +173,7 @@ export default function ReceiptModal({ order, onClose }) {
           background: var(--bg-secondary, #1c2541);
           border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
           border-radius: var(--radius-lg, 16px);
-          max-width: 600px;
+          max-width: 440px;
           width: 100%;
           max-height: 90vh;
           overflow-y: auto;
@@ -208,7 +186,7 @@ export default function ReceiptModal({ order, onClose }) {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 16px 24px;
+          padding: 14px 20px;
           border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
           background: rgba(0, 0, 0, 0.2);
           position: sticky;
@@ -218,171 +196,160 @@ export default function ReceiptModal({ order, onClose }) {
 
         .receipt-paper {
           background: #ffffff;
-          color: #1a1a1a;
-          padding: 32px 36px;
-          font-family: 'Courier New', Courier, monospace, sans-serif;
-          font-size: 0.9rem;
-          line-height: 1.4;
-          margin: 16px;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          color: #000000;
+          padding: 28px 24px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          font-size: 0.875rem;
+          line-height: 1.35;
+          margin: 16px auto;
+          max-width: 360px;
+          width: 100%;
+          border-radius: 6px;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .receipt-logo-wrap {
+          text-align: center;
+          margin-bottom: 8px;
+        }
+
+        .receipt-logo {
+          width: 68px;
+          height: 68px;
+          object-fit: contain;
+          border-radius: 50%;
+          margin: 0 auto;
+          display: block;
         }
 
         .receipt-header {
           text-align: center;
+          margin-bottom: 12px;
         }
 
-        .receipt-brand-logo {
-          font-family: var(--font-heading, sans-serif);
-          font-size: 1.6rem;
-          font-weight: 900;
-          letter-spacing: 2px;
-          color: #d90429;
+        .receipt-store-name {
+          font-size: 1.2rem;
+          font-weight: 800;
+          margin: 0 0 2px 0;
+          color: #000000;
         }
 
-        .receipt-brand-tagline {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: #444;
-          margin-top: 2px;
-        }
-
-        .receipt-store-info {
-          font-size: 0.75rem;
-          color: #666;
-          margin-top: 6px;
+        .receipt-store-sub {
+          font-size: 0.8rem;
+          color: #333333;
           line-height: 1.3;
         }
 
-        .receipt-divider {
-          border-top: 2px solid #222;
-          margin: 14px 0;
+        .receipt-dashed-line {
+          border-top: 1px dashed #777777;
+          margin: 10px 0;
         }
 
-        .receipt-divider-dashed {
-          border-top: 1px dashed #777;
-          margin: 12px 0;
-        }
-
-        .receipt-meta-grid {
+        .receipt-meta-row {
           display: flex;
           justify-content: space-between;
-          font-size: 0.85rem;
+          font-size: 0.825rem;
+          color: #222222;
+          line-height: 1.4;
         }
 
-        .receipt-label {
-          font-size: 0.75rem;
-          color: #666;
-          text-transform: uppercase;
+        .receipt-meta-col-left {
+          text-align: left;
         }
 
-        .receipt-value {
+        .receipt-meta-col-right {
+          text-align: right;
+        }
+
+        .receipt-customer-name {
           font-weight: 700;
-          color: #111;
+          color: #000000;
         }
 
-        .receipt-order-code {
-          font-size: 1.1rem;
-          color: #d90429;
-          letter-spacing: 1px;
-        }
-
-        .receipt-status-pill {
-          display: flex;
-          justify-content: space-between;
-          background: #f4f4f4;
-          padding: 6px 10px;
-          border-radius: 4px;
+        .receipt-address-trunc {
           font-size: 0.75rem;
-          margin-top: 8px;
+          color: #555555;
+          max-width: 170px;
         }
 
-        .receipt-customer-box {
-          font-size: 0.85rem;
+        .receipt-items-list {
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 10px;
+          margin: 4px 0;
         }
 
-        .receipt-section-title {
-          font-weight: 700;
-          font-size: 0.8rem;
-          color: #333;
-          margin-bottom: 4px;
-          letter-spacing: 0.5px;
-        }
-
-        .receipt-info-row {
-          display: flex;
-          justify-content: space-between;
-          gap: 12px;
-        }
-
-        .receipt-val-bold {
-          font-weight: 700;
-          color: #111;
-        }
-
-        .receipt-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 0.85rem;
-          margin: 8px 0;
-        }
-
-        .receipt-table th {
-          border-bottom: 1px solid #333;
-          padding: 6px 0;
-          font-size: 0.8rem;
-          color: #444;
-        }
-
-        .receipt-table td {
-          padding: 8px 0;
-          vertical-align: top;
-          border-bottom: 1px dotted #ccc;
-        }
-
-        .receipt-totals {
+        .receipt-item-entry {
           display: flex;
           flex-direction: column;
-          gap: 4px;
-          font-size: 0.9rem;
+          gap: 2px;
+        }
+
+        .receipt-item-title {
+          font-weight: 700;
+          font-size: 0.875rem;
+          color: #000000;
+        }
+
+        .receipt-item-math {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.825rem;
+          color: #222222;
+        }
+
+        .receipt-total-block {
+          margin: 4px 0;
         }
 
         .receipt-total-row {
           display: flex;
           justify-content: space-between;
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: #000000;
         }
 
-        .receipt-grand-total {
-          display: flex;
-          justify-content: space-between;
-          font-size: 1.15rem;
-          font-weight: 900;
-          color: #d90429;
+        .receipt-notes-block {
+          background: #f4f4f4;
+          border-radius: 4px;
+          padding: 6px 10px;
+          font-size: 0.775rem;
+          color: #333333;
+          margin: 8px 0;
+        }
+
+        .receipt-notes-label {
+          font-weight: 600;
+        }
+
+        .receipt-payment-info {
+          text-align: center;
+          font-size: 0.8rem;
+          color: #222222;
+          margin-top: 16px;
+          line-height: 1.45;
         }
 
         .receipt-footer {
           text-align: center;
-          font-size: 0.8rem;
           margin-top: 14px;
+          padding-top: 8px;
+          border-top: 1px dashed #dddddd;
         }
 
-        .receipt-barcode-visual {
-          margin-top: 12px;
-          font-family: monospace;
-          letter-spacing: 4px;
-          font-size: 1rem;
+        .receipt-thanks {
           font-weight: 700;
-          color: #444;
+          font-size: 0.85rem;
+          margin-bottom: 2px;
+          color: #000000;
         }
 
-        /* PRINT STYLES FOR CLEAN PDF GENERATION */
+        /* PRINT STYLES FOR CLEAN PDF / THERMAL GENERATION */
         @media print {
           @page {
             size: auto;
-            margin: 10mm 12mm;
+            margin: 8mm 10mm;
           }
 
           html, body {
@@ -395,7 +362,7 @@ export default function ReceiptModal({ order, onClose }) {
             padding: 0 !important;
           }
 
-          /* Hide everything in the page except the printable modal backdrop */
+          /* Hide everything except printable receipt */
           body > #root > div > *:not(.main-content),
           .sidebar,
           .header,
@@ -440,14 +407,13 @@ export default function ReceiptModal({ order, onClose }) {
             position: static !important;
             display: block !important;
             width: 100% !important;
-            max-width: 650px !important;
+            max-width: 380px !important;
             margin: 0 auto !important;
-            padding: 16px 20px !important;
+            padding: 0 !important;
             background: #ffffff !important;
             color: #000000 !important;
             box-shadow: none !important;
-            border: 1px dashed #777 !important;
-            border-radius: 4px !important;
+            border: none !important;
             page-break-inside: avoid !important;
           }
 
@@ -455,13 +421,6 @@ export default function ReceiptModal({ order, onClose }) {
           .receipt-paper * {
             visibility: visible !important;
             color: #000000 !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-
-          .receipt-brand-logo,
-          .receipt-order-code {
-            color: #d90429 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
