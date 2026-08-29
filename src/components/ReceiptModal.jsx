@@ -380,42 +380,90 @@ export default function ReceiptModal({ order, onClose }) {
 
         /* PRINT STYLES FOR CLEAN PDF GENERATION */
         @media print {
-          body * {
-            visibility: hidden;
+          @page {
+            size: auto;
+            margin: 10mm 12mm;
           }
-          .receipt-modal-backdrop {
-            position: absolute !important;
-            inset: 0 !important;
-            background: transparent !important;
-            padding: 0 !important;
+
+          html, body {
+            background: #ffffff !important;
+            color: #000000 !important;
+            height: auto !important;
+            min-height: auto !important;
             overflow: visible !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
+
+          /* Hide everything in the page except the printable modal backdrop */
+          body > #root > div > *:not(.main-content),
+          .sidebar,
+          .header,
+          .page-header,
+          .stat-grid,
+          .card,
+          .table-container,
+          .receipt-actions-bar,
+          .btn,
+          .no-print {
+            display: none !important;
+          }
+
+          .receipt-modal-backdrop {
+            position: static !important;
+            display: block !important;
+            background: #ffffff !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            width: 100% !important;
+            height: auto !important;
+            box-shadow: none !important;
+            backdrop-filter: none !important;
+          }
+
           .receipt-modal-container {
+            position: static !important;
+            display: block !important;
+            background: #ffffff !important;
             border: none !important;
             box-shadow: none !important;
             max-width: 100% !important;
             width: 100% !important;
-            background: transparent !important;
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
-          .receipt-paper, .receipt-paper * {
-            visibility: visible !important;
-          }
+
           .receipt-paper {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
+            position: static !important;
+            display: block !important;
             width: 100% !important;
-            max-width: 700px !important;
+            max-width: 650px !important;
             margin: 0 auto !important;
-            padding: 24px !important;
+            padding: 16px 20px !important;
+            background: #ffffff !important;
+            color: #000000 !important;
             box-shadow: none !important;
-            border: none !important;
+            border: 1px dashed #777 !important;
+            border-radius: 4px !important;
+            page-break-inside: avoid !important;
           }
-          .no-print {
-            display: none !important;
+
+          .receipt-paper,
+          .receipt-paper * {
+            visibility: visible !important;
+            color: #000000 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .receipt-brand-logo,
+          .receipt-order-code {
+            color: #d90429 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
       `}} />
