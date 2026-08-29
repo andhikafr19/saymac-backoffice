@@ -1,5 +1,6 @@
-import React from 'react';
-import { Printer, X, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { Printer, X, FileText, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { toPng } from 'html-to-image';
 
 // Helper to remove redundant "Say Macaroni - " or "Say Macaroni " from product names
 function cleanProductName(rawName) {
@@ -8,10 +9,41 @@ function cleanProductName(rawName) {
 }
 
 export default function ReceiptModal({ order, onClose }) {
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+
   if (!order) return null;
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownloadImage = async () => {
+    const node = document.getElementById('printable-receipt');
+    if (!node || isGeneratingImage) return;
+
+    try {
+      setIsGeneratingImage(true);
+      // High-resolution Retina export (pixelRatio 3 for ultra-sharp receipt image)
+      const dataUrl = await toPng(node, {
+        quality: 1.0,
+        pixelRatio: 3,
+        backgroundColor: '#ffffff',
+        cacheBust: true,
+      });
+
+      const cleanCode = (order.order_code || 'PESANAN').replace(/[^a-zA-Z0-9-_]/g, '');
+      const link = document.createElement('a');
+      link.download = `Struk-SayMacaroni-${cleanCode}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Failed to export receipt image:', err);
+      alert('Gagal membuat gambar struk. Silakan gunakan opsi Cetak/PDF.');
+    } finally {
+      setIsGeneratingImage(false);
+    }
   };
 
   const orderDate = new Date(order.created_at || Date.now());
@@ -32,18 +64,45 @@ export default function ReceiptModal({ order, onClose }) {
               Struk & Bukti Pesanan Kasir
             </span>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button 
+              onClick={handleDownloadImage} 
+              disabled={isGeneratingImage}
+              className="btn btn-primary" 
+              style={{ 
+                padding: '8px 14px', 
+                fontSize: '0.85rem', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                opacity: isGeneratingImage ? 0.7 : 1,
+                cursor: isGeneratingImage ? 'not-allowed' : 'pointer'
+              }}
+              title="Unduh struk sebagai file gambar PNG untuk dikirim via WhatsApp ke pelanggan/dapur"
+            >
+              {isGeneratingImage ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" /> Menyimpan...
+                </>
+              ) : (
+                <>
+                  <ImageIcon size={15} /> Unduh Gambar (PNG)
+                </>
+              )}
+            </button>
             <button 
               onClick={handlePrint} 
-              className="btn btn-primary" 
-              style={{ padding: '8px 18px', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+              className="btn btn-secondary" 
+              style={{ padding: '8px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+              title="Cetak ke printer kasir / simpan PDF"
             >
-              <Printer size={16} /> Cetak / Simpan PDF
+              <Printer size={15} /> Cetak / PDF
             </button>
             <button 
               onClick={onClose} 
               className="btn btn-ghost" 
-              style={{ padding: '8px 12px' }}
+              style={{ padding: '8px 10px' }}
+              title="Tutup"
             >
               <X size={18} />
             </button>
@@ -58,6 +117,7 @@ export default function ReceiptModal({ order, onClose }) {
               src="/images/say_macaroni_logo-removebg.png" 
               alt="Say Macaroni Logo" 
               className="receipt-logo"
+              crossOrigin="anonymous"
               onError={(e) => {
                 e.target.style.display = 'none';
               }}
@@ -173,7 +233,7 @@ export default function ReceiptModal({ order, onClose }) {
           background: var(--bg-secondary, #1c2541);
           border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
           border-radius: var(--radius-lg, 16px);
-          max-width: 440px;
+          max-width: 460px;
           width: 100%;
           max-height: 90vh;
           overflow-y: auto;
@@ -192,6 +252,8 @@ export default function ReceiptModal({ order, onClose }) {
           position: sticky;
           top: 0;
           z-index: 10;
+          gap: 10px;
+          flex-wrap: wrap;
         }
 
         .receipt-paper {
@@ -343,6 +405,15 @@ export default function ReceiptModal({ order, onClose }) {
           font-size: 0.85rem;
           margin-bottom: 2px;
           color: #000000;
+        }
+
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
 
         /* PRINT STYLES FOR CLEAN PDF / THERMAL GENERATION */
